@@ -41,7 +41,7 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
     # Convert datetime columns to strings
     for col in selected_columns:
         if pd.api.types.is_datetime64_any_dtype(df[col]):
-            df[col] = df[col].astype(str)
+            df.loc[:, col] = df[col].astype(str)
 
     def create_geometry(coords):
         if geometry_type == "Point":
@@ -53,7 +53,7 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
         return None
 
     # Create geometry column based on coordinates
-    df['geometry'] = df[gps_col].apply(lambda coord_string: create_geometry(parse_and_validate_coordinates(coord_string)[0]))
+    df.loc[:, 'geometry'] = df[gps_col].apply(lambda coord_string: create_geometry(parse_and_validate_coordinates(coord_string)[0]))
     
     # Return GeoDataFrame with selected columns
     gdf = gpd.GeoDataFrame(df[selected_columns + ['geometry']], geometry='geometry')
