@@ -41,7 +41,7 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
     # Convert datetime columns to strings
     for col in selected_columns:
         if pd.api.types.is_datetime64_any_dtype(df[col]):
-            df.loc[:, col] = df[col].astype(str)
+            df[col] = df[col].astype(str)
 
     def create_geometry(coords):
         if geometry_type == "Point":
@@ -53,7 +53,7 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
         return None
 
     # Create geometry column based on coordinates
-    df.loc[:, 'geometry'] = df[gps_col].apply(lambda coord_string: create_geometry(parse_and_validate_coordinates(coord_string)[0]))
+    df['geometry'] = df[gps_col].apply(lambda coord_string: create_geometry(parse_and_validate_coordinates(coord_string)[0]))
     
     # Return GeoDataFrame with selected columns
     gdf = gpd.GeoDataFrame(df[selected_columns + ['geometry']], geometry='geometry')
@@ -79,8 +79,7 @@ if uploaded_file:
     sheet_name = st.selectbox("Select Sheet", sheet_names)
     
     if sheet_name:
-        # Make a copy of the DataFrame to avoid SettingWithCopyWarning
-        df = pd.read_excel(uploaded_file, sheet_name=sheet_name).copy()
+        df = pd.read_excel(uploaded_file, sheet_name=sheet_name)
         columns = df.columns.tolist()
         gps_col = st.selectbox("Select GPS Column", columns)
         
@@ -114,48 +113,45 @@ if uploaded_file:
                 
                 # Convert and Export button
                 if st.button("Convert Data"):
-                    with st.spinner("Processing your data... 📊"):
-                        df_filtered = df[df[gps_col].notnull()].copy()  # Make a copy to avoid SettingWithCopyWarning
+                    df_filtered = df[df[gps_col].notnull()]
+                    
+                    if df_filtered.empty:
+                        st.warning("No valid GPS data found.")
+                    else:
+                        gdf = convert_to_gdf(df_filtered, gps_col, transformation, geometry_type, selected_columns)
                         
-                        if df_filtered.empty:
-                            st.warning("No valid GPS data found.")
-                        else:
-                            gdf = convert_to_gdf(df_filtered, gps_col, transformation, geometry_type, selected_columns)
-                            
+                        with tempfile.TemporaryDirectory() as tmpdirname:
+                            output_base = os.path.join(tmpdirname, f"{sheet_name}_{gps_col}_{transformation}")
                             output_file = ""
-                            with tempfile.TemporaryDirectory() as tmpdirname:
-                                output_base = os.path.join(tmpdirname, f"{sheet_name}_{gps_col}_{transformation}")
 
-                                # Save based on selected format
-                                if format_option == "shapefile":
-                                    gdf.to_file(f"{output_base}.shp")
-                                    zip_filename = f"{output_base}.zip"
-                                    with zipfile.ZipFile(zip_filename, 'w') as zipf:
-                                        for ext in ['shp', 'shx', 'dbf', 'prj', 'cpg']:
-                                            file = f"{output_base}.{ext}"
-                                            if os.path.exists(file):
-                                                zipf.write(file, os.path.basename(file))
-                                    output_file = zip_filename
-                                elif format_option == "kml":
-                                    output_file = f"{output_base}.kml"
-                                    gdf.to_file(output_file, driver='KML')
-                                elif format_option == "gpkg":
-                                    output_file = f"{output_base}.gpkg"
-                                    gdf.to_file(output_file, driver='GPKG')
-                                elif format_option == "geoparquet":
-                                    output_file = f"{output_base}.parquet"
-                                    gdf.to_parquet(output_file)
-                                elif format_option == "geojson":
-                                    output_file = f"{output_base}.geojson"
-                                    gdf.to_file(output_file, driver='GeoJSON')
+                            # Save based on selected format
+                            if format_option == "shapefile":
+                                gdf.to_file(f"{output_base}.shp")
+                                zip_filename = f"{output_base}.zip"
+                                with zipfile.ZipFile(zip_filename, 'w') as zipf:
+                                    for ext in ['shp', 'shx', 'dbf', 'prj', 'cpg']:
+                                        file = f"{output_base}.{ext}"
+                                        if os.path.exists(file):
+                                            zipf.write(file, os.path.basename(file))
+                                output_file = zip_filename
+                            elif format_option == "kml":
+                                output_file = f"{output_base}.kml"
+                                gdf.to_file(output_file, driver='KML')
+                            elif format_option == "gpkg":
+                                output_file = f"{output_base}.gpkg"
+                                gdf.to_file(output_file, driver='GPKG')
+                            elif format_option == "geoparquet":
+                                output_file = f"{output_base}.parquet"
+                                gdf.to_parquet(output_file)
+                            elif format_option == "geojson":
+                                output_file = f"{output_base}.geojson"
+                                gdf.to_file(output_file, driver='GeoJSON')
 
-                    # Check if the output file exists before proceeding
-                    if output_file and os.path.exists(output_file):
-                        st.success("File created successfully! 🎉")
-                        # Download the file and delete afterward
-                        with open(output_file, "rb") as file:
-                            st.download_button(
-                                label="📥 Download File", 
-                                data=file, 
-                                file_name=os.path.basename(output_file)
-                            )
+                            st.success("File created successfully! 🎉")
+                            # Download the file and delete afterward
+                            with open(output_file, "rb") as file:
+                                st.download_button(
+                                    label="📥 Download File", 
+                                    data=file, 
+                                    file_name=os.path.basename(output_file)
+                                )
