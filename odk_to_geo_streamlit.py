@@ -1,3 +1,16 @@
+import tempfile
+import zipfile
+import os
+from shapely.geometry import LineString, Point, Polygon
+import fiona
+
+# Enable KML driver for reading and writing
+fiona.supported_drivers['KML'] = 'rw'
+
+# App Title and Introduction
+st.title("ODK Spatial Data Transformer 🌍")
+st.markdown("Transform ODK spatial data into a geospatial format of your choice. Upload an Excel file with GPS coordinates, select transformation options, and export as shapefile, KML, GPKG, and more!")
+
 # Sidebar for Input and Configuration
 with st.sidebar:
     st.header("Configuration")
