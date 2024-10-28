@@ -1,1 +1,7 @@
 
+streamlit
+pandas
+geopandas
+shapely
+zipfile
+tempfile
