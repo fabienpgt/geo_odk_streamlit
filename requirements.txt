@@ -1,5 +1,5 @@
 
-streamlit == 1.29.0
-pandas == 2.2.2
-geopandas == 0.14.2
-shapely == 2.0.1
+streamlit
+pandas
+geopandas
+shapely
