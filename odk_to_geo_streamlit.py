@@ -79,7 +79,8 @@ if uploaded_file:
     sheet_name = st.selectbox("Select Sheet", sheet_names)
     
     if sheet_name:
-        df = pd.read_excel(uploaded_file, sheet_name=sheet_name)
+        # Make a copy of the DataFrame to avoid SettingWithCopyWarning
+        df = pd.read_excel(uploaded_file, sheet_name=sheet_name).copy()
         columns = df.columns.tolist()
         gps_col = st.selectbox("Select GPS Column", columns)
         
@@ -114,7 +115,7 @@ if uploaded_file:
                 # Convert and Export button
                 if st.button("Convert Data"):
                     with st.spinner("Processing your data... 📊"):
-                        df_filtered = df[df[gps_col].notnull()]
+                        df_filtered = df[df[gps_col].notnull()].copy()  # Make a copy to avoid SettingWithCopyWarning
                         
                         if df_filtered.empty:
                             st.warning("No valid GPS data found.")
