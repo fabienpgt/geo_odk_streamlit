@@ -61,7 +61,7 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
 
 # App Title and Introduction
 st.title("ODK Spatial Data Transformer 🌍")
-st.markdown("Transform ODK spatial data into a geospatial format of your choice. Upload an Excel file with GPS coordinates, select transformation options, and export as shapefile, KML, GPKG, and more!")
+st.markdown("Transform ODK spatial data into a geospatial format of your choice.")
 
 # Sidebar for Input and Configuration
 with st.sidebar:
