@@ -7,10 +7,10 @@ import os
 import zipfile
 import tempfile
 
-# Activer le driver KML pour lecture et écriture
+# Enable the KML driver for reading and writing
 fiona.supported_drivers['KML'] = 'rw'
 
-# Fonction pour déterminer le type de géométrie en fonction d'un échantillon de coordonnées
+# Function to determine the geometry type based on a sample of coordinates
 def determine_geometry_type(coords):
     if len(coords) == 1:
         return "Point"
@@ -20,7 +20,7 @@ def determine_geometry_type(coords):
         return "Polygon"
     return "Unknown"
 
-# Fonction pour analyser et valider les coordonnées
+# Function to parse and validate coordinates
 def parse_and_validate_coordinates(coord_string):
     if isinstance(coord_string, str):  
         try:
@@ -36,9 +36,9 @@ def parse_and_validate_coordinates(coord_string):
     else:
         return [], "Invalid"
 
-# Fonction pour convertir les données en GeoDataFrame avec les colonnes sélectionnées
+# Function to convert data into a GeoDataFrame with selected columns
 def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns):
-    # Convertir les colonnes datetime en chaînes de caractères
+    # Convert datetime columns to strings
     for col in selected_columns:
         if pd.api.types.is_datetime64_any_dtype(df[col]):
             df[col] = df[col].astype(str)
@@ -52,67 +52,68 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
             return Polygon(coords)
         return None
 
-    # Créer la colonne de géométrie
+    # Create the geometry column
     df['geometry'] = df[gps_col].apply(lambda coord_string: create_geometry(parse_and_validate_coordinates(coord_string)[0]))
     
-    # Garder uniquement les colonnes sélectionnées
+    # Keep only the selected columns
     gdf = gpd.GeoDataFrame(df[selected_columns + ['geometry']], geometry='geometry')
     return gdf
 
-# Interface utilisateur Streamlit
-st.title("Transformation de données GPS en WKT")
+# Streamlit user interface
+st.title("ODK Spatial Data Transformer")
+st.subheader("Convert ODK Spatial Data to Geospatial Format")
 
-uploaded_file = st.file_uploader("Choisissez un fichier Excel", type=["xlsx"])
+uploaded_file = st.file_uploader("Choose an Excel file", type=["xlsx"])
 
 if uploaded_file:
     xls = pd.ExcelFile(uploaded_file)
     sheet_names = xls.sheet_names
-    sheet_name = st.selectbox("Choisissez la feuille", sheet_names)
+    sheet_name = st.selectbox("Choose the sheet", sheet_names)
 
     if sheet_name:
         df = pd.read_excel(uploaded_file, sheet_name=sheet_name)
         
         columns = df.columns.tolist()
-        gps_col = st.selectbox("Choisissez la colonne contenant les données GPS", columns)
+        gps_col = st.selectbox("Choose the column containing GPS data", columns)
 
         if gps_col:
-            # Validation de la colonne sélectionnée
+            # Validate the selected column
             sample_coords, geometry_type = parse_and_validate_coordinates(df[gps_col].iloc[0])
 
             if geometry_type == "Invalid":
-                st.warning("La colonne sélectionnée ne contient pas de données GPS valides pour une géométrie.")
+                st.warning("The selected column does not contain valid GPS data for a geometry.")
             else:
-                st.write(f"Type de géométrie détecté pour la colonne : {geometry_type}")
+                st.write(f"Detected geometry type for the column: {geometry_type}")
 
-                # Utiliser des boutons radio pour le choix de transformation de la géométrie (uniquement pour les polygones)
+                # Use radio buttons for geometry transformation choice (for polygons only)
                 if geometry_type == "Polygon":
-                    transformation = st.radio("Choisissez la transformation de géométrie", ["line", "polygon"])
+                    transformation = st.radio("Choose the geometry transformation", ["line", "polygon"])
                 else:
-                    transformation = geometry_type.lower()  # Automatiquement défini pour Point et Line
+                    transformation = geometry_type.lower()  # Automatically set for Point and Line
 
-                # Sélection des colonnes à inclure dans les données géospatiales
-                selected_columns = st.multiselect("Sélectionnez les colonnes à inclure dans l'exportation", columns, default=[gps_col])
+                # Select columns to include in geospatial data
+                selected_columns = st.multiselect("Select columns to include in the export", columns, default=[gps_col])
 
-                # Utiliser des boutons radio pour le format de sortie
-                format_option = st.radio("Choisissez le format de sortie", ["shapefile", "kml", "gpkg", "geoparquet", "geojson"])
+                # Use radio buttons for output format
+                format_option = st.radio("Choose the output format", ["shapefile", "kml", "gpkg", "geoparquet", "geojson"])
 
-                if st.button("Convertir"):
-                    # Filtrer les valeurs non nulles
+                if st.button("Convert"):
+                    # Filter non-null values
                     df_filtered = df[df[gps_col].notnull()]
 
                     if df_filtered.empty:
-                        st.warning("La colonne sélectionnée ne contient aucune donnée GPS valide.")
+                        st.warning("The selected column does not contain any valid GPS data.")
                     else:
                         gdf = convert_to_gdf(df_filtered, gps_col, transformation, geometry_type, selected_columns)
                         
-                        # Utilisation d'un fichier temporaire pour la sortie
+                        # Use a temporary file for output
                         with tempfile.TemporaryDirectory() as tmpdirname:
                             final_geometry_type = transformation if geometry_type == "Polygon" else geometry_type.lower()
                             output_file_base = os.path.join(tmpdirname, f"{sheet_name}_{gps_col}_{final_geometry_type}")
 
-                            # Sauvegarder selon le format sélectionné
+                            # Save according to the selected format
                             if format_option == "shapefile":
-                                # Créer une archive zip pour le shapefile
+                                # Create a zip archive for the shapefile
                                 gdf.to_file(f"{output_file_base}.shp")
                                 zip_filename = f"{output_file_base}.zip"
                                 with zipfile.ZipFile(zip_filename, 'w') as zipf:
@@ -135,7 +136,7 @@ if uploaded_file:
                                 output_file = f"{output_file_base}.geojson"
                                 gdf.to_file(output_file, driver='GeoJSON')
 
-                            # Télécharger le fichier et le supprimer automatiquement après
-                            st.success(f"Fichier {os.path.basename(output_file)} créé avec succès.")
+                            # Download the file and automatically delete it afterward
+                            st.success(f"File {os.path.basename(output_file)} created successfully.")
                             with open(output_file, "rb") as file:
-                                st.download_button(label="Télécharger le fichier", data=file, file_name=os.path.basename(output_file))
+                                st.download_button(label="Download the file", data=file, file_name=os.path.basename(output_file))
