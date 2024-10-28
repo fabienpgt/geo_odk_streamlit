@@ -121,4 +121,11 @@ if uploaded_file:
                                 gdf.to_file(output_file, driver='GPKG')
                             elif format_option == "geoparquet":
                                 output_file = f"{output_base}.parquet"
-                                gdf.to_parque
+                                gdf.to_parquet(output_file)
+                            elif format_option == "geojson":
+                                output_file = f"{output_base}.geojson"
+                                gdf.to_file(output_file, driver='GeoJSON')
+                            
+                            st.success("File created successfully! 🎉")
+                            with open(output_file, "rb") as file:
+                                st.download_button(label="📥 Download File", data=file, file_name=os.path.basename(output_file))
