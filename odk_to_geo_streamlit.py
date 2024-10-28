@@ -120,11 +120,10 @@ if uploaded_file:
                             st.warning("No valid GPS data found.")
                         else:
                             gdf = convert_to_gdf(df_filtered, gps_col, transformation, geometry_type, selected_columns)
-
+                            
                             output_file = ""
                             with tempfile.TemporaryDirectory() as tmpdirname:
                                 output_base = os.path.join(tmpdirname, f"{sheet_name}_{gps_col}_{transformation}")
-                                output_file = ""
 
                                 # Save based on selected format
                                 if format_option == "shapefile":
