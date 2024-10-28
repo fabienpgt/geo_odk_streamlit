@@ -116,6 +116,9 @@ if uploaded_file:
                             st.warning("No valid GPS data found.")
                         else:
                             gdf = convert_to_gdf(df_filtered, gps_col, transformation, geometry_type, selected_columns)
+
+                            # Reproject to WGS84 (EPSG:4326) before saving
+                            gdf = gdf.to_crs(epsg=4326)
                             
                             with tempfile.TemporaryDirectory() as tmpdirname:
                                 output_base = os.path.join(tmpdirname, f"{sheet_name}_{gps_col}_{transformation}")
@@ -144,11 +147,11 @@ if uploaded_file:
                                     output_file = f"{output_base}.geojson"
                                     gdf.to_file(output_file, driver='GeoJSON')
                                 
-                                # Download the file and delete afterward
-                                st.success("File created successfully! 🎉")
-                                with open(output_file, "rb") as file:
-                                    st.download_button(
-                                        label="📥 Download File", 
-                                        data=file, 
-                                        file_name=os.path.basename(output_file)
-                                    )
+                # Download the file and delete afterward
+                st.success("File created successfully! 🎉")
+                with open(output_file, "rb") as file:
+                    st.download_button(
+                        label="📥 Download File", 
+                        data=file, 
+                        file_name=os.path.basename(output_file)
+                    )
