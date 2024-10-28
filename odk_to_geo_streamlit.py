@@ -1,14 +1,63 @@
 import streamlit as st
+import pandas as pd
+import geopandas as gpd
 import tempfile
 import zipfile
 import os
 from shapely.geometry import LineString, Point, Polygon
 import fiona
-import pandas as pd
-import geopandas as gpd
 
 # Enable KML driver for reading and writing
 fiona.supported_drivers['KML'] = 'rw'
+
+# Function to determine geometry type based on sample coordinates
+def determine_geometry_type(coords):
+    if len(coords) == 1:
+        return "Point"
+    elif len(coords) >= 2 and coords[0] != coords[-1]:
+        return "Line"
+    elif len(coords) >= 4 and coords[0] == coords[-1]:
+        return "Polygon"
+    return "Unknown"
+
+# Function to parse and validate coordinates
+def parse_and_validate_coordinates(coord_string):
+    if isinstance(coord_string, str):
+        try:
+            coords = [
+                tuple(map(float, coord.split()[:2]))[::-1] 
+                for coord in coord_string.split(';') 
+                if len(coord.split()) >= 2
+            ]
+            geometry_type = determine_geometry_type(coords)
+            return coords, geometry_type
+        except ValueError:
+            return [], "Invalid"
+    else:
+        return [], "Invalid"
+
+# Function to convert data to GeoDataFrame
+def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns):
+    # Convert datetime columns to strings
+    for col in selected_columns:
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            df[col] = df[col].astype(str)
+
+    def create_geometry(coords):
+        if geometry_type == "Point":
+            return Point(coords[0])
+        elif geometry_type == "Line" or (geometry_type == "Polygon" and transformation == "line"):
+            return LineString(coords)
+        elif geometry_type == "Polygon" and transformation == "polygon":
+            return Polygon(coords)
+        return None
+
+    # Create geometry column based on coordinates
+    df['geometry'] = df[gps_col].apply(lambda coord_string: create_geometry(parse_and_validate_coordinates(coord_string)[0]))
+    
+    # Return GeoDataFrame with selected columns
+    gdf = gpd.GeoDataFrame(df[selected_columns + ['geometry']], geometry='geometry')
+    return gdf
 
 # App Title and Introduction
 st.title("ODK Spatial Data Transformer 🌍")
