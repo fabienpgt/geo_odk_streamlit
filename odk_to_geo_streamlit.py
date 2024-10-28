@@ -1,11 +1,11 @@
-import streamlit
+import streamlit as st
 import tempfile
 import zipfile
 import os
 from shapely.geometry import LineString, Point, Polygon
 import fiona
-import pandas
-import geopandas
+import pandas as pd
+import geopandas as gpd
 
 # Enable KML driver for reading and writing
 fiona.supported_drivers['KML'] = 'rw'
