@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import fiona
 import geopandas as gpd
 from shapely.geometry import LineString, Point, Polygon
 import os
@@ -7,7 +8,7 @@ import zipfile
 import tempfile
 
 # Activer le driver KML pour lecture et écriture
-gpd.io.file.fiona.drvsupport.supported_drivers['KML'] = 'rw'
+fiona.supported_drivers['KML'] = 'rw'
 
 # Fonction pour déterminer le type de géométrie en fonction d'un échantillon de coordonnées
 def determine_geometry_type(coords):
