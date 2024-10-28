@@ -3,8 +3,6 @@ import pandas as pd
 import geopandas as gpd
 from shapely.geometry import LineString, Point, Polygon
 import os
-import folium
-from streamlit_folium import st_folium
 import zipfile
 import tempfile
 
