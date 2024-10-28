@@ -57,6 +57,10 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
     
     # Return GeoDataFrame with selected columns
     gdf = gpd.GeoDataFrame(df[selected_columns + ['geometry']], geometry='geometry')
+
+    # Set CRS to epsg 4326
+    gdf.set_crs(epsg=4326, inplace=True)
+    
     return gdf
 
 # App Title and Introduction
@@ -117,9 +121,7 @@ if uploaded_file:
                         else:
                             gdf = convert_to_gdf(df_filtered, gps_col, transformation, geometry_type, selected_columns)
 
-                            # Reproject to WGS84 (EPSG:4326) before saving
-                            gdf = gdf.to_crs(epsg=4326)
-                            
+                            output_file = ""
                             with tempfile.TemporaryDirectory() as tmpdirname:
                                 output_base = os.path.join(tmpdirname, f"{sheet_name}_{gps_col}_{transformation}")
                                 output_file = ""
@@ -146,12 +148,14 @@ if uploaded_file:
                                 elif format_option == "geojson":
                                     output_file = f"{output_base}.geojson"
                                     gdf.to_file(output_file, driver='GeoJSON')
-                                
-                # Download the file and delete afterward
-                st.success("File created successfully! 🎉")
-                with open(output_file, "rb") as file:
-                    st.download_button(
-                        label="📥 Download File", 
-                        data=file, 
-                        file_name=os.path.basename(output_file)
-                    )
+
+                    # Check if the output file exists before proceeding
+                    if output_file and os.path.exists(output_file):
+                        st.success("File created successfully! 🎉")
+                        # Download the file and delete afterward
+                        with open(output_file, "rb") as file:
+                            st.download_button(
+                                label="📥 Download File", 
+                                data=file, 
+                                file_name=os.path.basename(output_file)
+                            )
