@@ -67,6 +67,18 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
 st.title("ODK Spatial Data Transformer 🌍")
 st.markdown("Transform ODK spatial data into a geospatial format of your choice.")
 
+# Steps Overview for the User
+st.markdown("""
+### How to Use This App
+Follow these steps to transform your ODK data into the desired geospatial format:
+
+1. **Upload Your Data**: Use the sidebar to upload your Excel file with GPS data.
+2. **Select Sheet and GPS Column**: Choose the sheet and GPS column containing your location data.
+3. **Set Transformation Options**: If your data represents polygons, choose if you want to convert them to lines or polygons.
+4. **Choose Export Format**: Select the format you want for your geospatial output (e.g., GeoJSON, KML).
+5. **Convert and Download**: Click 'Convert Data' to process your file and download the output.
+""")
+
 # Sidebar for Input and Configuration
 with st.sidebar:
     st.header("Configuration")
