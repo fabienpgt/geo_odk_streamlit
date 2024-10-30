@@ -70,7 +70,6 @@ st.markdown("Transform ODK spatial data into a geospatial format of your choice.
 # Steps Overview for the User
 st.markdown("""
 ### How to Use This App
-Follow these steps to transform your ODK data into the desired geospatial format:
 
 1. **Upload Your Data**: Use the sidebar to upload your Excel file with GPS data.
 2. **Select Sheet and GPS Column**: Choose the sheet and GPS column containing your location data.
