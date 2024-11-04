@@ -102,6 +102,8 @@ if uploaded_file:
                 for i, item in enumerate(columns):
                 	if item == gps_col:
                 		mylist[i] = f"{gps_col}_text"
+
+            st.write(columns)
                 
                 
             sample_coords, geometry_type = parse_and_validate_coordinates(df[gps_col].iloc[0])
