@@ -99,7 +99,7 @@ if uploaded_file:
                 df = df.rename(columns={gps_col: f"{gps_col}_text"}, errors="raise")
                 gps_col = f"{gps_col}_text"
 
-                for i, item in enumerate(sheet_names):
+                for i, item in enumerate(columns):
                 	if item == gps_col:
                 		mylist[i] = f"{gps_col}_text"
                 
