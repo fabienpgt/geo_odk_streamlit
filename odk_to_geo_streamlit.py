@@ -101,7 +101,7 @@ if uploaded_file:
 
                 for i, item in enumerate(columns):
                 	if item == 'geometry':
-                		mylist[i] = gps_col
+                		columns[i] = gps_col
 
             st.write(columns)
                 
