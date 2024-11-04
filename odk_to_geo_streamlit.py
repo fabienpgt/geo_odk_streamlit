@@ -96,7 +96,7 @@ if uploaded_file:
         
         if gps_col:
             if gps_col == 'geometry' :
-                df.rename(columns={gps_col: f"{gps_col}_text"}, errors="raise")
+                df = df.rename(columns={gps_col: f"{gps_col}_text"}, errors="raise")
                 gps_col = f"{gps_col}_text"
                 
             st.table(df)
