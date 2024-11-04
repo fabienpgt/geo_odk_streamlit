@@ -99,6 +99,7 @@ if uploaded_file:
                 df.rename(columns={gps_col: f"{gps_col}_text"}, errors="raise")
                 gps_col = f"{gps_col}_text"
                 
+            st.table(df)
             sample_coords, geometry_type = parse_and_validate_coordinates(df[gps_col].iloc[0])
             
             if geometry_type == "Invalid":
