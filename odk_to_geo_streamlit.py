@@ -101,6 +101,7 @@ if uploaded_file:
 
                 for i, item in enumerate(columns):
                 	if item == gps_col:
+                        st.write('Column geometry found')
                 		mylist[i] = f"{gps_col}_text"
 
             st.write(columns)
