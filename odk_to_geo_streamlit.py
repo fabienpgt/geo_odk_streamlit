@@ -95,6 +95,10 @@ if uploaded_file:
         gps_col = st.selectbox("Select GPS Column", columns)
         
         if gps_col:
+            if gps_col == 'geometry' :
+                df.rename(columns={"gps_col": f"{gps_col}_text", errors="raise")
+                gps_col = f"{gps_col}_text"
+                
             sample_coords, geometry_type = parse_and_validate_coordinates(df[gps_col].iloc[0])
             
             if geometry_type == "Invalid":
