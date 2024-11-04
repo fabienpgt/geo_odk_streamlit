@@ -98,6 +98,11 @@ if uploaded_file:
             if gps_col == 'geometry' :
                 df = df.rename(columns={gps_col: f"{gps_col}_text"}, errors="raise")
                 gps_col = f"{gps_col}_text"
+
+                for i, item in enumerate(sheet_names):
+                	if item == gps_col:
+                		mylist[i] = f"{gps_col}_text"
+                
                 
             sample_coords, geometry_type = parse_and_validate_coordinates(df[gps_col].iloc[0])
             
