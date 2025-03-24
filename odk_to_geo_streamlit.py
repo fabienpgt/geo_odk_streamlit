@@ -115,9 +115,6 @@ if 'uploaded_file' in st.session_state:
                 	if item == 'geometry':
                 		columns[i] = gps_col
 
-            st.write(columns)
-                
-                
             sample_coords, geometry_type = parse_and_validate_coordinates(df[gps_col].iloc[0])
 
             if geometry_type == "Invalid":
