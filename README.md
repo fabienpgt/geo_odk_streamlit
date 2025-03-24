@@ -24,5 +24,5 @@ Before you start, make sure you have the following installed on your machine:
 ## Setup
 
 1. Clone the Repository
-2. Run 'poetry install'
-3. Run 'poetry run streamlit run .\odk_to_geo_streamlit.py' to launch the app
+2. Run `poetry install`
+3. Run `poetry run streamlit run .\odk_to_geo_streamlit.py` to launch the app
