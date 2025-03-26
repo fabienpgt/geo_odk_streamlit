@@ -10,7 +10,7 @@ import fiona
 # Enable KML driver for reading and writing
 fiona.supported_drivers['KML'] = 'rw'
 
-# Function to determine geometry type based on sample coordinates
+# Determine geometry type based on sample coordinates
 def determine_geometry_type(coords):
     if len(coords) == 1:
         return "Point"
@@ -20,7 +20,7 @@ def determine_geometry_type(coords):
         return "Polygon"
     return "Unknown"
 
-# Function to parse and validate coordinates
+# Parse and validate coordinates
 def parse_and_validate_coordinates(coord_string):
     if isinstance(coord_string, str):
         try:
@@ -36,7 +36,7 @@ def parse_and_validate_coordinates(coord_string):
     else:
         return [], "Invalid"
 
-# Function to convert data to GeoDataFrame
+# Convert data to GeoDataFrame
 def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns):
     # Convert datetime columns to strings
     for col in selected_columns:
@@ -55,7 +55,7 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
     # Create geometry column based on coordinates
     df['geometry'] = df[gps_col].apply(lambda coord_string: create_geometry(parse_and_validate_coordinates(coord_string)[0]))
 
-    # Return GeoDataFrame with selected columns
+    # Return gdf with selected columns
     gdf = gpd.GeoDataFrame(df[selected_columns + ['geometry']], geometry='geometry')
 
     # Set CRS to epsg 4326
@@ -63,7 +63,6 @@ def convert_to_gdf(df, gps_col, transformation, geometry_type, selected_columns)
 
     return gdf
 
-# App Title and Introduction
 st.title("ODK Spatial Data Transformer 🌍")
 st.markdown("Transform ODK spatial data into a geospatial format of your choice.")
 
@@ -84,7 +83,6 @@ with st.sidebar:
     if uploaded_file:
         st.session_state.uploaded_file = uploaded_file
 
-# Main App Logic
 if 'uploaded_file' in st.session_state:
     uploaded_file = st.session_state.uploaded_file
     file_extension = uploaded_file.name.split('.')[-1].lower()
@@ -179,7 +177,7 @@ if 'uploaded_file' in st.session_state:
                                 gdf.to_file(output_file, driver='GeoJSON')
 
                             st.success("File created successfully! 🎉")
-                            # Download the file and delete afterward
+                            # Download the file
                             with open(output_file, "rb") as file:
                                 st.download_button(
                                     label="📥 Download File",
